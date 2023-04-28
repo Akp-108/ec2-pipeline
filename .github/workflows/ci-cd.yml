@@ -30,12 +30,15 @@ jobs:
         wget -O- https://download.newrelic.com/548C16BF.gpg | sudo apt-key add -
         sudo apt-get update
         sudo apt-get install newrelic-sysmond -y
-        sudo nrsysmond-config --set license_key=${NR_LICENSE_KEY}
-        sudo /etc/init.d/newrelic-sysmond start
-
+        sudo nrsysmond-config --set license_key=${NEW_RELIC_LICENSE_KEY}
+        sudo service newrelic-sysmond start
     - name: Configure New Relic Infrastructure Agent
       run: |
         sudo sed -i "s/^license_key:.*/license_key: $NR_LICENSE_KEY/" /etc/newrelic-infra.yml
         sudo sed -i "s/^hostname:.*/hostname: ${{ steps.get-instance-ip.outputs.instance_ip }}/" /etc/newrelic-infra.yml
       env:
         NR_LICENSE_KEY: ${{ secrets.NR_LICENSE_KEY }}
+
+
+
+# this way is also working but there is a error
