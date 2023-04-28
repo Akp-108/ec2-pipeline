@@ -22,22 +22,18 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y awscli
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Install New Relic agent
-      env:
-        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       run: |
         echo "deb http://apt.newrelic.com/debian/ newrelic non-free" | sudo tee /etc/apt/sources.list.d/newrelic.list
         wget -O- https://download.newrelic.com/548C16BF.gpg | sudo apt-key add -
         sudo apt-get update
-        sudo apt-get install newrelic-sysmond -y
+        sudo apt-get install newrelic-infra -y
+        sudo systemctl enable newrelic-infra
+        sudo systemctl start newrelic-infra
         sudo nrsysmond-config --set license_key=${NR_LICENSE_KEY}
-        sudo service newrelic-sysmond start
     - name: Configure New Relic agent
-      env:
-        NEW_RELIC_LICENSE_KEY: ${{ secrets.NR_LICENSE_KEY }}
       run: |
         echo "license_key: ${NR_LICENSE_KEY}" | sudo tee -a /etc/newrelic-infra.yml
         sudo systemctl restart newrelic-infra
-
-
-# this way is also working but there is a error
