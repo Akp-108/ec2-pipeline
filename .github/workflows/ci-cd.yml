@@ -34,9 +34,9 @@ jobs:
         sudo service newrelic-sysmond start
     - name: Configure New Relic agent
       env:
-        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+        NEW_RELIC_LICENSE_KEY: ${{ secrets.NR_LICENSE_KEY }}
       run: |
-        echo "license_key: ${NEW_RELIC_LICENSE_KEY}" | sudo tee -a /etc/newrelic-infra.yml
+        echo "license_key: ${NR_LICENSE_KEY}" | sudo tee -a /etc/newrelic-infra.yml
         sudo systemctl restart newrelic-infra
 
 
