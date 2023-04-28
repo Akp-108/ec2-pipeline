@@ -32,13 +32,12 @@ jobs:
         sudo apt-get install newrelic-sysmond -y
         sudo nrsysmond-config --set license_key=${NR_LICENSE_KEY}
         sudo service newrelic-sysmond start
-    - name: Configure New Relic Infrastructure Agent
-      run: |
-        sudo sed -i "s/^license_key:.*/license_key: $NR_LICENSE_KEY/" /etc/newrelic-infra.yml
-        sudo sed -i "s/^hostname:.*/hostname: ${{ steps.get-instance-ip.outputs.instance_ip }}/" /etc/newrelic-infra.yml
+    - name: Configure New Relic agent
       env:
-        NR_LICENSE_KEY: ${{ secrets.NR_LICENSE_KEY }}
-
+        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      run: |
+        echo "license_key: ${NEW_RELIC_LICENSE_KEY}" | sudo tee -a /etc/newrelic-infra.yml
+        sudo systemctl restart newrelic-infra
 
 
 # this way is also working but there is a error
