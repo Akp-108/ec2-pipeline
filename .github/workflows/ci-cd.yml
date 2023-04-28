@@ -30,7 +30,7 @@ jobs:
         wget -O- https://download.newrelic.com/548C16BF.gpg | sudo apt-key add -
         sudo apt-get update
         sudo apt-get install newrelic-sysmond -y
-        sudo nrsysmond-config --set license_key=${NEW_RELIC_LICENSE_KEY}
+        sudo nrsysmond-config --set license_key=${NR_LICENSE_KEY}
         sudo service newrelic-sysmond start
     - name: Configure New Relic Infrastructure Agent
       run: |
