@@ -22,11 +22,11 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y awscli
-    - name: Get Instance IP
-      id: get-instance-ip
-      run: |
-        INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $EC2_INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
-        echo "::set-output name=instance_ip::$INSTANCE_IP"
+#     - name: Get Instance IP
+#       id: get-instance-ip
+#       run: |
+#         INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $EC2_INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+#         echo "::set-output name=instance_ip::$INSTANCE_IP"
     - name: Install New Relic Infrastructure Agent
       run: |
         curl -L https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | sudo apt-key add -
