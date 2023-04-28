@@ -1,38 +1,43 @@
-name: CI/CD counter app
+name: Install New Relic Infrastructure Agent on EC2 instance
 
 on:
-  push:
-    branches: [ master, main ]
   workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-west-2
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  EC2_INSTANCE_ID: i-05510310afb9021e2
+  NR_LICENSE_KEY: ${{ secrets.NR_LICENSE_KEY }}
 
 jobs:
-#First we will see the application build or not , then we will deploy in EC2
-#   build:
-#     runs-on: ubuntu-latest
-    
-#     steps:
-#     - uses: actions/checkout@v2
-    
-#     - name: Build the docker_compose
-#       run: docker-compose up -d --build
-      
-#     - name: Buid the application
-#       run: docker-compose exec -T counter_app npm run build
-
-  Deploy:
-#     needs: build
+  install-nr-agent:
     runs-on: ubuntu-latest
-    
     steps:
-      - uses: actions/checkout@v2 
-      - name: Deploy in EC2
-        env:
-            PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY  }}
-            HOSTNAME : ${{ secrets.HOSTNAME  }}
-            USER_NAME : ${{ secrets.USER_NAME  }}
-            
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-          
-
+    - name: Install AWS CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y awscli
+    - name: Get Instance IP
+      id: get-instance-ip
+      run: |
+        INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $EC2_INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+        echo "::set-output name=instance_ip::$INSTANCE_IP"
+    - name: Install New Relic Infrastructure Agent
+      run: |
+        curl -L https://download.newrelic.com/infrastructure_agent/linux/newrelic-infra.gpg | sudo apt-key add -
+        printf "deb [arch=amd64] https://download.newrelic.com/infrastructure_agent/linux/apt $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/newrelic-infra.list
+        sudo apt-get update
+        sudo apt-get install newrelic-infra -y
+      env:
+        NR_LICENSE_KEY: ${{ secrets.NR_LICENSE_KEY }}
+    - name: Configure New Relic Infrastructure Agent
+      run: |
+        sudo sed -i "s/^license_key:.*/license_key: $NR_LICENSE_KEY/" /etc/newrelic-infra.yml
+        sudo sed -i "s/^hostname:.*/hostname: ${{ steps.get-instance-ip.outputs.instance_ip }}/" /etc/newrelic-infra.yml
+      env:
+        NR_LICENSE_KEY: ${{ secrets.NR_LICENSE_KEY }}
